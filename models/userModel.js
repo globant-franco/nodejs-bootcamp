@@ -66,6 +66,7 @@ userSchema.pre('save', async function (next) {
 
 userSchema.pre(/^find/, function (next) {
   // `this` points to the current query
+  // remember that in arrow functions you don't have access to the `this` keyword
   // Not equal to false will also fetch those documents where
   // the active field is not set yet, or doesn't exist in the DB scheme
   // due to changes in the schema fields

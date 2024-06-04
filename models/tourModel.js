@@ -182,6 +182,17 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
+tourSchema.pre(/^find/, function (next) {
+  // `populate` has to do another query to look up the guide(user) of the specified tour
+  // please consider that this might impact performance if list to populate is too long
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt', // everything except these 2 fields
+  });
+  console.log('e=ieeefrere');
+  next();
+});
+
 tourSchema.post(/^find/, function (docs, next) {
   console.log(`Query took ${Date.now() - this.startTime} milliseconds`);
   next();

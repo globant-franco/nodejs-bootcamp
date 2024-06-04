@@ -41,6 +41,8 @@ exports.createTour = catchAsync(async (req, res, next) => {
 });
 
 exports.getTour = catchAsync(async (req, res, next) => {
+  //  const tour = await Tour.findById(req.params.id).populate('guides'); // this query all user fields, check the pre find hook to populate guides by default on all find* queries
+
   const tour = await Tour.findById(req.params.id);
   // same as Tour.findOne({_id: req.params.id})
   // Calling .next here will jump into the global middleware
