@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const User = require('./userModel');
 //const validator = require('validator');
 
 const tourSchema = new mongoose.Schema(
@@ -115,6 +116,14 @@ const tourSchema = new mongoose.Schema(
         },
       },
     ],
+    //guides: Array, // in case we'd like child embedding, an array of users(guides, lead-guides)
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId, // this is how we do referencing
+        ref: 'User',
+        required: [true, 'A tour must belong to a guide'],
+      },
+    ],
   },
   {
     toJSON: { virtuals: true },
@@ -137,6 +146,19 @@ tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
+
+// If we pass an array of user_ids when creating a tour, then replace that id with an user document
+// `pre save` hooks only works for new documents, we run this function in case we want embedded documents
+// but there are drawbacks of using this approach because if user data changes then we need another hook
+// to reflect these changes in the embedded documents.
+// We're not going with this approach, instead we'll do referencing
+// tourSchema.pre('save', async function (next) {
+//   const guidesPromises = this.guides.map(async (id) => {
+//     await User.findById(id);
+//   });
+//   this.guides = Promise.all(guidesPromises);
+//   next();
+// });
 
 // You can have multiple pre save hooks
 // tourSchema.pre('save', function (next) {
