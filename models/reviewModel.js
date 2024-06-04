@@ -13,11 +13,13 @@ const reviewSchema = new mongoose.Schema(
       default: Date.now(),
     },
     tour: {
+      // Parent referencing
       type: mongoose.Schema.ObjectId,
       ref: 'Tour',
       required: [true, 'A review must belong to a tour'],
     },
     user: {
+      // Parent referencing
       type: mongoose.Schema.ObjectId,
       ref: 'User',
       required: [true, 'A review must belong to a user'],
@@ -31,10 +33,15 @@ const reviewSchema = new mongoose.Schema(
 
 // Populate tour and user fields on find* methods
 reviewSchema.pre(/^find/, function (next) {
+  // turn this off for now, because it keeps nesting child objects
+  // e.g. it also populates the guides, check the Tour model `pre find`
+  // hook for more info.
+  // this.populate({
+  //   path: 'tour',
+  //   select: 'name',
+  // })
+
   this.populate({
-    path: 'tour',
-    select: 'name',
-  }).populate({
     path: 'user',
     select: 'name photo',
   });

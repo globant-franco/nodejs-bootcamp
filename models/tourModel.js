@@ -137,6 +137,13 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
+// let's query reviews as a virtual attribute so we don't persist that in the DB
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour', // the name of the field of how the relationship is named in the referenced model, in the Review Model we have a field called `tour`
+  localField: '_id', // this references to tour._id
+});
+
 // Mongo middleware is also called pre-post hooks (in rails callbacks)
 // for types of middleware: document, query, aggregate and model
 
