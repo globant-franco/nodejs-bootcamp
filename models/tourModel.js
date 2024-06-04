@@ -85,6 +85,36 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      // this is actually an object that needs to have type and coordinates
+      // GeoJSON is a data type to handle geospatial coordinates
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point', 'LineString', 'Polygon'], // Adding the other accepted types for educational purposes
+        required: true,
+      },
+      coordinates: [Number], // First latitude, then longitude
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+          required: true,
+        },
+        coordinates: [Number], // First latitude, then longitude
+        address: String,
+        description: String,
+        day: {
+          type: Number,
+          required: [true, 'A location must have a day'],
+        },
+      },
+    ],
   },
   {
     toJSON: { virtuals: true },
@@ -116,7 +146,7 @@ tourSchema.pre('save', function (next) {
 
 // doc is the document that was saved to the DB
 tourSchema.post('save', function (doc, next) {
-  console.log('After save Tour: ', doc);
+  //console.log('After save Tour: ', doc);
   next();
 });
 

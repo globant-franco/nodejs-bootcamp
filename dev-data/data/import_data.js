@@ -9,7 +9,7 @@ const DB_STRING = process.env.DATABASE.replace(
   process.env.DATABASE_PASSWORD
 );
 
-const tours = fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf8');
+const tours = fs.readFileSync(`${__dirname}/tours.json`, 'utf8');
 
 mongoose
   .connect(DB_STRING, {
