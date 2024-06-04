@@ -189,7 +189,6 @@ tourSchema.pre(/^find/, function (next) {
     path: 'guides',
     select: '-__v -passwordChangedAt', // everything except these 2 fields
   });
-  console.log('e=ieeefrere');
   next();
 });
 
