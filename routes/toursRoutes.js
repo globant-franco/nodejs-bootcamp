@@ -3,7 +3,7 @@ const tourRouter = express.Router(); // this is a middleware
 const toursController = require('./../controllers/toursController');
 const authController = require('./../controllers/authController');
 const reviewsController = require('../controllers/reviewsController');
-
+const reviewsRouter = require('./reviewsRoutes');
 //tourRouter.param('id', toursController.checkID);
 
 tourRouter
@@ -28,12 +28,17 @@ tourRouter
   )
   .patch(toursController.updateTour);
 
-tourRouter
-  .route('/:tourId/reviews')
-  .post(
-    authController.protect,
-    authController.restrictTo('user'),
-    reviewsController.createReview
-  );
+// Not elegant solution because it's duplicated in the reviews router
+// as well
+// tourRouter
+//   .route('/:tourId/reviews')
+//   .post(
+//     authController.protect,
+//     authController.restrictTo('user'),
+//     reviewsController.createReview
+//   );
+
+// Use this instead to add nested routes
+tourRouter.use('/:tourId/reviews', reviewsRouter);
 
 module.exports = tourRouter;
