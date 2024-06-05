@@ -1,6 +1,7 @@
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const factory = require('./handlerFactory');
 
 const filterObject = (obj, ...allowedFields) => {
   const filteredObj = {};
@@ -12,84 +13,15 @@ const filterObject = (obj, ...allowedFields) => {
   return filteredObj;
 };
 
-exports.getUsers = catchAsync(async (req, res) => {
-  const users = await User.find();
+exports.getUsers = factory.getAll(User);
+exports.getUser = factory.getOne(User);
 
-  res.status(200).json({
-    status: 'success',
-    results: users.length,
-    data: {
-      users,
-    },
-  });
-});
+// These 2 controller actions are only for admin users
+exports.deleteUser = factory.deleteOne(User);
+// Do NOT update password in this action
+exports.updateUser = factory.updateOne(User);
 
-exports.createUser = (req, res) => {
-  const newId = users[users.length - 1].id + 1;
-  const newuser = Object.assign({ id: newId }, req.body);
-  users.push(newuser);
-  fs.writeFile(
-    './dev-data/data/users-simple.json',
-    JSON.stringify(users),
-    (err) => {
-      console.log('Error writing file in post request', err);
-      res.status(201).json({
-        status: 'success',
-        data: {
-          user: newuser,
-        },
-      });
-    }
-  );
-};
-
-exports.getUser = (req, res) => {
-  const id = req.params.id * 1;
-  const user = users.find((ele) => ele.id === id);
-
-  if (!user) {
-    return res.status(404).json({ status: 'fail', message: 'user not found' });
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      user,
-    },
-  });
-};
-
-exports.deleteUser = (req, res) => {
-  const id = req.params.id * 1;
-  const user = users.find((ele) => ele.id === id);
-
-  if (!user) {
-    return res.status(404).json({ status: 'fail', message: 'user not found' });
-  }
-
-  res.status(204).json({
-    status: 'success',
-    data: null,
-  });
-};
-
-exports.updateUser = (req, res) => {
-  const id = req.params.id * 1;
-  const user = users.find((ele) => ele.id === id);
-
-  if (!user) {
-    return res.status(404).json({ status: 'fail', message: 'user not found' });
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      user: `<Updated user ${user.id} here...>`,
-    },
-  });
-};
-
-// This function is to only allow logged in user to update name and email
+// This function is to only allow logged in users to update their name and email
 exports.updateMe = catchAsync(async (req, res, next) => {
   // 1) Create error if user POSTs password data
   if (req.body.password || req.body.passwordConfirm) {
@@ -117,6 +49,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
+// This function is to only allow logged in users
 exports.deleteMe = catchAsync(async (req, res, next) => {
   await User.findByIdAndUpdate(req.user.id, { active: false });
   // 204 no content

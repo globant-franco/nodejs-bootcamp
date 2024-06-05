@@ -12,6 +12,7 @@ class APIFeatures {
     excludedFields.forEach((key) => delete queryObj[key]);
 
     // 2) Advanced filtering
+    // Convert filters to mongoose format, like {$gte=5}
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lt|lte)\b/g, (match) => `$${match}`);
 

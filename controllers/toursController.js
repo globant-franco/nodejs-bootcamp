@@ -1,9 +1,9 @@
 //const fs = require('fs');
 //const tours = JSON.parse(fs.readFileSync('./dev-data/data/tours-simple.json'));
 const Tour = require('./../models/tourModel');
-const APIFeatures = require('./../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/appError');
+const factory = require('./handlerFactory');
+
 // This middleware is called before getTours
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = 5;
@@ -12,97 +12,25 @@ exports.aliasTopTours = (req, res, next) => {
   next();
 };
 
-exports.getTours = catchAsync(async (req, res, next) => {
-  const features = new APIFeatures(req.query, Tour)
-    .filter()
-    .sort()
-    .limitFields()
-    .pagination();
-  const tours = await features.model;
+exports.getTours = factory.getAll(Tour);
 
-  res.status(200).json({
-    status: 'success',
-    results: tours.length,
-    data: {
-      tours,
-    },
-  });
-});
+exports.createTour = factory.createOne(Tour);
 
-exports.createTour = catchAsync(async (req, res, next) => {
-  const newTour = await Tour.create(req.body);
+exports.getTour = factory.getOne(Tour, { path: 'reviews' });
 
-  res.status(201).json({
-    status: 'success',
-    data: {
-      tour: newTour,
-    },
-  });
-});
+// exports.deleteTour = catchAsync(async (req, res, next) => {
+//   const tour = await Tour.findByIdAndDelete(req.params.id);
 
-exports.getTour = catchAsync(async (req, res, next) => {
-  //  const tour = await Tour.findById(req.params.id).populate('guides'); // this query all user fields, check the pre find hook to populate guides by default on all find* queries
+//   if (!tour) return next(new AppError('Tour not found', 404));
 
-  // reviews is a virtual field
-  const tour = await Tour.findById(req.params.id).populate('reviews');
-  // same as Tour.findOne({_id: req.params.id})
-  // Calling .next here will jump into the global middleware
-  if (!tour) return next(new AppError('Tour not found', 404));
+//   res.status(204).json({
+//     status: 'success',
+//     data: null,
+//   });
+// });
+exports.deleteTour = factory.deleteOne(Tour);
 
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour: tour,
-    },
-  });
-});
-
-exports.deleteTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findByIdAndDelete(req.params.id);
-
-  if (!tour) return next(new AppError('Tour not found', 404));
-
-  res.status(204).json({
-    status: 'success',
-    data: null,
-  });
-});
-
-exports.updateTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new: true, // send back the new updated tour object
-    runValidators: true, // run the validators on the updated object
-  });
-
-  if (!tour) return next(new AppError('Tour not found', 404));
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour: tour,
-    },
-  });
-});
-
-// exports.checkBody = (req, res, next) => {
-//   if (!req.body.name || !req.body.price) {
-//     return res.status(400).json({
-//       status: 'fail',
-//       message: 'Missing name or price',
-//     });
-//   }
-//   next();
-// };
-
-// exports.checkID = (req, res, next, value) => {
-// const tour = tours.find((ele) => ele.id === value);
-
-// if (!tour) {
-//   return res.status(404).json({ status: 'fail', message: 'Tour not found' });
-// }
-
-//next();
-// };
+exports.updateTour = factory.updateOne(Tour);
 
 exports.getTourStats = catchAsync(async (req, res, next) => {
   // Aggregation Pipeline
@@ -179,3 +107,23 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
     data: plan,
   });
 });
+
+// exports.checkBody = (req, res, next) => {
+//   if (!req.body.name || !req.body.price) {
+//     return res.status(400).json({
+//       status: 'fail',
+//       message: 'Missing name or price',
+//     });
+//   }
+//   next();
+// };
+
+// exports.checkID = (req, res, next, value) => {
+// const tour = tours.find((ele) => ele.id === value);
+
+// if (!tour) {
+//   return res.status(404).json({ status: 'fail', message: 'Tour not found' });
+// }
+
+//next();
+// };
