@@ -9,7 +9,7 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A tour must have a name'],
       trim: true,
-      unique: true,
+      unique: true, // when setting unique mongo creates an index
       maxLength: [40, 'The tour must have less than or equal to 40 characters'],
       minLength: [10, 'The tour must have more than or equal to 10 characters'],
       // validator: [ // just for demo purposes
@@ -131,6 +131,10 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+// 1 stands for ascending order, -1 descending order
+// this is a compound index of (price and ratingsAverage)
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
 // the .get means that it will be computed every time we get data from the database, treat get as getters
 // Don't use arrow functions here because you won't have access to the .this
 tourSchema.virtual('durationWeeks').get(function () {
