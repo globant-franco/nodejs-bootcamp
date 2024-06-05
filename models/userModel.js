@@ -64,17 +64,6 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-userSchema.pre(/^find/, function (next) {
-  // `this` points to the current query
-  // remember that in arrow functions you don't have access to the `this` keyword
-  // Not equal to false will also fetch those documents where
-  // the active field is not set yet, or doesn't exist in the DB scheme
-  // due to changes in the schema fields
-  // so, it will for instance return those with active=undefined
-  this.find({ active: { $ne: false } });
-  next();
-});
-
 // This hook is called when for instance the user resets password
 // or updates it
 userSchema.pre('save', async function (next) {
@@ -85,6 +74,17 @@ userSchema.pre('save', async function (next) {
   // date AKA JWTTimestamp greater than passwordChangedAt
   // if this happen then the token is marked as invalid
   this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
+userSchema.pre(/^find/, function (next) {
+  // `this` points to the current query
+  // remember that in arrow functions you don't have access to the `this` keyword
+  // Not equal to false will also fetch those documents where
+  // the active field is not set yet, or doesn't exist in the DB scheme
+  // due to changes in the schema fields
+  // so, it will for instance return those with active=undefined
+  this.find({ active: { $ne: false } });
   next();
 });
 
