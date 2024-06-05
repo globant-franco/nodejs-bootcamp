@@ -15,6 +15,12 @@ exports.getReviews = catchAsync(async (req, res) => {
 });
 
 exports.createReview = catchAsync(async (req, res) => {
+  // This is a nested route but we also need to give support
+  // if you want to explicitly pass the tourId
+  if (!req.body.tour) req.body.tour = req.params.tourId;
+  // req.user comes from the protect middleware
+  if (!req.body.user) req.body.user = req.user.id;
+
   const newReview = await Review.create(req.body);
 
   res.status(201).json({

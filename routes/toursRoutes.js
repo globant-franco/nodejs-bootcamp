@@ -2,6 +2,7 @@ const express = require('express');
 const tourRouter = express.Router(); // this is a middleware
 const toursController = require('./../controllers/toursController');
 const authController = require('./../controllers/authController');
+const reviewsController = require('../controllers/reviewsController');
 
 //tourRouter.param('id', toursController.checkID);
 
@@ -26,5 +27,13 @@ tourRouter
     toursController.deleteTour
   )
   .patch(toursController.updateTour);
+
+tourRouter
+  .route('/:tourId/reviews')
+  .post(
+    authController.protect,
+    authController.restrictTo('user'),
+    reviewsController.createReview
+  );
 
 module.exports = tourRouter;
