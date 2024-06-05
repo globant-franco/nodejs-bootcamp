@@ -2,21 +2,31 @@ const express = require('express');
 const tourRouter = express.Router(); // this is a middleware
 const toursController = require('./../controllers/toursController');
 const authController = require('./../controllers/authController');
-const reviewsController = require('../controllers/reviewsController');
-const reviewsRouter = require('./reviewsRoutes');
-//tourRouter.param('id', toursController.checkID);
+const reviewsRouter = require('./../routes/reviewsRoutes');
+// Use this instead to add nested routes
+tourRouter.use('/:tourId/reviews', reviewsRouter);
 
 tourRouter
   .route('/top-5-cheap')
   .get(toursController.aliasTopTours, toursController.getTours);
 
 tourRouter.route('/tour-stats').get(toursController.getTourStats);
-tourRouter.route('/monthly-plan/:year').get(toursController.getMonthlyPlan);
+tourRouter
+  .route('/monthly-plan/:year')
+  .get(
+    authController.protect,
+    authController.restrictTo('admin', 'lead-guide', 'guide'),
+    toursController.getMonthlyPlan
+  );
 
 tourRouter
   .route('/')
-  .get(authController.protect, toursController.getTours)
-  .post(toursController.createTour);
+  .get(toursController.getTours)
+  .post(
+    authController.protect,
+    authController.restrictTo('admin', 'lead-guide'),
+    toursController.createTour
+  );
 
 tourRouter
   .route('/:id')
@@ -26,7 +36,11 @@ tourRouter
     authController.restrictTo('admin', 'lead-guide'),
     toursController.deleteTour
   )
-  .patch(toursController.updateTour);
+  .patch(
+    authController.protect,
+    authController.restrictTo('admin', 'lead-guide'),
+    toursController.updateTour
+  );
 
 // Not elegant solution because it's duplicated in the reviews router
 // as well
@@ -37,8 +51,5 @@ tourRouter
 //     authController.restrictTo('user'),
 //     reviewsController.createReview
 //   );
-
-// Use this instead to add nested routes
-tourRouter.use('/:tourId/reviews', reviewsRouter);
 
 module.exports = tourRouter;
