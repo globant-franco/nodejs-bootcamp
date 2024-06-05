@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const Tour = require('./tourModel');
 const reviewSchema = new mongoose.Schema(
   {
     review: { type: String, required: [true, "Can't be empty"] },
@@ -47,6 +47,37 @@ reviewSchema.pre(/^find/, function (next) {
   });
 
   next();
+});
+
+reviewSchema.statics.calcAverageRating = async function (tourId) {
+  // this points to the current model
+  const stats = await this.aggregate([
+    {
+      $match: { tour: tourId },
+    },
+    {
+      $group: {
+        _id: '$tour', // group results by tourId
+        nRating: { $sum: 1 }, //for each review that matches that tour add 1
+        avgRating: { $avg: '$rating' }, // compute the average rating for each review
+      },
+    },
+  ]);
+  // store new stats in the corresponding tour corresponding to the review
+  await Tour.findByIdAndUpdate(tourId, {
+    ratingsQuantity: stats[0].nRating,
+    ratingsAverage: stats[0].avgRating,
+  });
+};
+
+// every time we save a new review or update it, compute the review stats
+reviewSchema.post('save', function () {
+  // this points to the current review
+  // Review is not available at this point because we need to create first the model
+  // as mongoose.model(.....) and pass the schema, so in order to calc a class method
+  // we do this.constructor
+  // remember that in express order of declaration matters, it runs secuentally
+  this.constructor.calcAverageRating(this.tour);
 });
 
 const Review = mongoose.model('Review', reviewSchema);
