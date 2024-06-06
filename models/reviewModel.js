@@ -64,18 +64,42 @@ reviewSchema.statics.calcAverageRating = async function (tourId) {
     },
   ]);
   // store new stats in the corresponding tour corresponding to the review
-  await Tour.findByIdAndUpdate(tourId, {
-    ratingsQuantity: stats[0].nRating,
-    ratingsAverage: stats[0].avgRating,
-  });
+  if (stats.length > 0) {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: stats[0].nRating,
+      ratingsAverage: stats[0].avgRating,
+    });
+  } else {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: 0, // this is default value
+      ratingsAverage: 4.5, // this is default value
+    });
+  }
 };
 
-// every time we save a new review or update it, compute the review stats
+// Let's compute stats also when review is deleted
+// Basically the stats must be updated when calling findByIdAndUpdate and findByIdAndDelete
+// both run behind the scenes findOneAndUpdate and findOneAndDelete
+reviewSchema.pre(/^findOneAnd/, async function (next) {
+  // `this` points to the current query, since document hasn't been saved yet then because we're just querying then
+  // we're not having access to the incoming changes, therefore we can't compute the statistics.
+  // So we're gonna make this little trick to pass the review query object to the next middlware
+  // to get the tourId AKA review.tour
+  this.reviewBeforeSave = await this.findOne();
+  next();
+});
+reviewSchema.post(/^findOneAnd/, async function () {
+  await this.reviewBeforeSave.constructor.calcAverageRating(
+    this.reviewBeforeSave.tour
+  );
+});
+
+// called every time we create a NEW review (this doesn't run when updating!), compute the review stats
 reviewSchema.post('save', function () {
-  // this points to the current review
+  // `this` points to the current review
   // Review is not available at this point because we need to create first the model
-  // as mongoose.model(.....) and pass the schema, so in order to calc a class method
-  // we do this.constructor
+  // as mongoose.model(.....) and pass the schema, so in order to call a class method
+  // we do: this.constructor
   // remember that in express order of declaration matters, it runs secuentally
   this.constructor.calcAverageRating(this.tour);
 });
