@@ -102,9 +102,12 @@ app.use(
 //   next();
 // });
 
-// Views handling
+// Views handler
 app.get('/', (req, res) => {
-  res.status(200).render('base'); //  no need to set the .pug extension
+  res.status(200).render('base', {
+    tour: 'Test Tour',
+    user: 'Test User',
+  }); //  no need to set the .pug extension
 });
 
 // API Routes
