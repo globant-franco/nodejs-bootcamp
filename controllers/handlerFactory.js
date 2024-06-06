@@ -79,7 +79,7 @@ exports.getAll = (Model) =>
       .pagination();
     // calling features.model.explain() will return the explain of the query
     // const documents = await features.model.explain();
-
+    debugger;
     const documents = await features.model;
 
     res.status(200).json({

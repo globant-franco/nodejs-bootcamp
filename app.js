@@ -1,3 +1,4 @@
+const path = require('path'); //native built-on module
 const express = require('express');
 const morgan = require('morgan');
 const tourRouter = require('./routes/toursRoutes');
@@ -11,6 +12,14 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xssClean = require('xss-clean');
 const hpp = require('hpp');
 const app = express();
+
+// Express support pug templates out of the box, no need to install additional packages
+// nevertheless install the pug package
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+
+// Make public directory accessible to serve static files
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 1) Global middleware
 
@@ -84,9 +93,6 @@ app.use(
   })
 );
 
-// Make public directory accessible to serve static files
-app.use(express.static(`${__dirname}/public`));
-
 // This middleware function applies to all requests
 // It is usually defined at the top level, not after response handlers
 // because the end the request/response cycle
@@ -95,6 +101,11 @@ app.use(express.static(`${__dirname}/public`));
 //   // Mandatory to always call next, otherwise the app would be stuck
 //   next();
 // });
+
+// Views handling
+app.get('/', (req, res) => {
+  res.status(200).render('base'); //  no need to set the .pug extension
+});
 
 // API Routes
 app.use('/api/v1/tours', tourRouter);
