@@ -215,9 +215,11 @@ tourSchema.post(/^find/, function (docs, next) {
 // the tours aggregated by month and the overall stats
 tourSchema.pre('aggregate', function (next) {
   // `this` points to the current aggregation object
-  console.log('aggregation pipeline is: ', this.pipeline());
+  //console.log('aggregation pipeline is: ', this.pipeline());
   // unshift adds element to the beginning of the pipeline array
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  // Commenting this out because it conflicts with aggregation pipeline
+  // in toursController.getDistances
+  //this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
   next();
 });
 

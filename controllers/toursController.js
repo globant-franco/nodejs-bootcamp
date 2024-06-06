@@ -134,8 +134,6 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
 exports.getToursWithin = catchAsync(async (req, res, next) => {
   const { distance, latlng, unit } = req.params;
   const [lat, lng] = latlng.split(',');
-  console.log('req.params ', req.params);
-  console.log(distance, lat, lng, unit);
 
   // input that the centerSphere option needs and that needs to be
   // defined in radians
@@ -164,6 +162,60 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
     results: tours.length,
     data: {
       data: tours,
+    },
+  });
+});
+
+// /distances/:latlng/unit/:unit
+// This endpoint will return how much distance there is between my location
+//  and the tour's location
+// BE CAREFUL with aggregation pipeline and the aggregate hooks you define
+// in your model, you might errors like $geoNear was not the first stage in the pipeline after optimization.
+// Remember there is a pre aggregate hook that add a match to the beginning of
+// each aggregator indicating to exclude secret tours from the results
+exports.getDistances = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+
+  if (!lat || !lng) {
+    // 400 Bad request
+    return next(
+      new AppError(
+        'Please provide latitude and longitude in the format lat,lng',
+        400
+      )
+    );
+  }
+
+  const distances = await Tour.aggregate([
+    {
+      // geoNear is the only aggregation pipeline that exists
+      // it also requires a geospatial index
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lat * 1, lng * 1],
+        },
+        distanceField: 'distance', // name of the field that's gonna be created and where we're gonna store the results
+        // the result of distance comes in meters!
+        distanceMultiplier: multiplier,
+      },
+    },
+    // in project we specify the fields that we want to query
+    {
+      $project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: distances,
     },
   });
 });
