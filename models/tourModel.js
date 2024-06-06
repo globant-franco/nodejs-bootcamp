@@ -136,6 +136,7 @@ const tourSchema = new mongoose.Schema(
 // this is a compound index of (price and ratingsAverage)
 tourSchema.index({ price: 1, ratingsAverage: -1 });
 tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' }); // for geospatial data index should be 2dsphere if data describes real points on the earth surface
 // the .get means that it will be computed every time we get data from the database, treat get as getters
 // Don't use arrow functions here because you won't have access to the .this
 tourSchema.virtual('durationWeeks').get(function () {

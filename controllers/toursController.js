@@ -1,5 +1,6 @@
 //const fs = require('fs');
 //const tours = JSON.parse(fs.readFileSync('./dev-data/data/tours-simple.json'));
+const AppError = require('../utils/appError');
 const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
 const factory = require('./handlerFactory');
@@ -127,3 +128,42 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
 
 //next();
 // };
+
+// /tours-within/:distance/center/:latlng/unit/:unit
+// /tours-within/8/center/-6,24/unit/kms
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+  console.log('req.params ', req.params);
+  console.log(distance, lat, lng, unit);
+
+  // input that the centerSphere option needs and that needs to be
+  // defined in radians
+  // 1 mile = 1.609344 kilometers
+  // radius of the earth in miles is 3963.2
+  // radius of the earth in kilometers is 6378.1
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
+  if (!lat || !lng) {
+    // 400 Bad request
+    return next(
+      new AppError(
+        'Please provide latitude and longitude in the format lat,lng',
+        400
+      )
+    );
+  }
+
+  // startLocation is a common queried field, remember it needs to be indexed
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lat, lng], radius] } },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      data: tours,
+    },
+  });
+});

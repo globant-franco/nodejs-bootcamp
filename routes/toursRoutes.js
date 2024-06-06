@@ -19,6 +19,13 @@ tourRouter
     toursController.getMonthlyPlan
   );
 
+// Distance is how many miles/kms within the sphere you want to look for a tour
+// latlng is the user's current location
+// unit can be in miles or in kilometers
+tourRouter
+  .route('/tours-within/:distance/center/:latlng/unit/:unit')
+  .get(toursController.getToursWithin);
+
 tourRouter
   .route('/')
   .get(toursController.getTours)
