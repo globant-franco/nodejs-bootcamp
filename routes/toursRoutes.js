@@ -3,7 +3,7 @@ const tourRouter = express.Router(); // this is a middleware
 const toursController = require('./../controllers/toursController');
 const authController = require('./../controllers/authController');
 const reviewsRouter = require('./../routes/reviewsRoutes');
-// Use this instead to add nested routes
+// Use this instead of adding nested routes
 tourRouter.use('/:tourId/reviews', reviewsRouter);
 
 tourRouter

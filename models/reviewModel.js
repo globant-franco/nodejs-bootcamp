@@ -94,6 +94,9 @@ reviewSchema.post(/^findOneAnd/, async function () {
   );
 });
 
+// Index to enforce users only give one review per tour
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 // called every time we create a NEW review (this doesn't run when updating!), compute the review stats
 reviewSchema.post('save', function () {
   // `this` points to the current review
