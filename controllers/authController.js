@@ -15,7 +15,7 @@ const signToken = (id) => {
 // Browsers automatically stores data in cookies and send it back to the browser
 // in each request
 // So we want to store the token in cookie so clients can send it back to the server
-// automatically when
+// automatically
 const signAndSendToken = (user, res, statusCode) => {
   const token = signToken(user.id);
   const cookieOptions = {
@@ -24,7 +24,7 @@ const signAndSendToken = (user, res, statusCode) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true, // cookie cannot be accessed or modified in any way by the browser, that's to prevent XSS attacks
-    // that also makes the browser so send the cookie automatically in every request
+    // that also makes the browser to send the cookie automatically in every request
   };
 
   // send it only through https, this is only for production
@@ -183,7 +183,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
-    console.log('error is ', e);
     return next(
       new AppError('There was an error sending the email. Try again later', 500)
     );
@@ -212,6 +211,8 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     return next(new AppError('Token is invalid or has expired', 400));
   }
 
+  //remember there is a pre save hook that encrypts the password
+  // and then clears out the passwordConfirm field
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
   user.passwordResetToken = undefined;

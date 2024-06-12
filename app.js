@@ -38,7 +38,7 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev')); // Logs reqs to console
 }
 
-// Here we define how many request per hour (60*60*1000) we want
+// Here we define how many request per hour (60mins*60sec*1000millisecs) we want
 // from a single IP address
 // Helps preventing Denial of service and brute force attacks
 const limiter = rateLimit({
@@ -105,18 +105,22 @@ app.use(
 // Views handler
 app.get('/', (req, res) => {
   res.status(200).render('base', {
-    tour: 'Test Tour',
-    user: 'Test User',
+    title: 'Homepage',
   }); //  no need to set the .pug extension
+});
+
+app.get('/overview', (req, res) => {
+  res.status(200).render('overview', { title: 'All Tours' });
+});
+
+app.get('/tour', (req, res) => {
+  res.status(200).render('tour', { title: 'The Forest Hiker' });
 });
 
 // API Routes
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
-app.get('/', (req, res) => {
-  res.status(200).send('Welcome to the natours app');
-});
 
 // Handle every other route
 // Order matters here, this middleware is for handling 404 requests
@@ -134,7 +138,9 @@ app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
 
-//global error handling middleware for operational errors(db connections, routes, models, etc)
+// global error handling middleware for operational errors(db connections, routes, models, etc)
+// everything that we could anticipate to happen and what we have a handlers, for instance
+// someone trying to fetch a tour with an incorrect identifier
 // when we specify these 4 params, express know that this is for error handling
 app.use(globalErrorHandler);
 

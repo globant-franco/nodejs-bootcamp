@@ -121,6 +121,9 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
 userSchema.methods.createPasswordResetToken = function () {
   // generate a random string
   // This resetToken is never stored in the database for security reasons
+  // it's only sent to the user and make it available only during a
+  // short period of time, once user sends it back we encrypt it
+  // and then compare it against the passwordResetToken field
   const resetToken = crypto.randomBytes(32).toString('hex'); // convert to hexadecimal string
   // Token is just a random string
   // Digest is a hashed string
