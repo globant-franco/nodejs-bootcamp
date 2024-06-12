@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const tourRouter = require('./routes/toursRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewsRoutes');
+const viewRouter = require('./routes/viewRoutes');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorsController');
 const rateLimit = require('express-rate-limit');
@@ -102,20 +103,8 @@ app.use(
 //   next();
 // });
 
-// Views handler
-app.get('/', (req, res) => {
-  res.status(200).render('base', {
-    title: 'Homepage',
-  }); //  no need to set the .pug extension
-});
-
-app.get('/overview', (req, res) => {
-  res.status(200).render('overview', { title: 'All Tours' });
-});
-
-app.get('/tour', (req, res) => {
-  res.status(200).render('tour', { title: 'The Forest Hiker' });
-});
+//views handler
+app.use('/', viewRouter);
 
 // API Routes
 app.use('/api/v1/tours', tourRouter);
