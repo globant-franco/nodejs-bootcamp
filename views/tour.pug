@@ -5,8 +5,6 @@ block append head
   script(src='https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js')
   link(href='https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css' rel='stylesheet')
 
-
-
 mixin overviewBox(label, text, icon)
   .overview-box__detail
     svg.overview-box__icon
@@ -15,7 +13,6 @@ mixin overviewBox(label, text, icon)
     span.overview-box__text= text
 
 block content
-  script(src="/js/mapbox.js")
   section.section-header
     .header__hero
       .header__hero-overlay &nbsp;
