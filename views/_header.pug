@@ -9,9 +9,13 @@ header.header
   .header__logo
     img(src="/img/logo-white.png", alt="Natours Logo")
   nav.nav.nav--user
-    a.nav__el(href="#") My Bookings
-    a.nav__el(href="#")
-      img.nav__user-img(src="/img/user.jpg" alt="User photo")
-      span Jonas
-    a.nav__el(href="/login") Log in
-    button.nav__el.nav__el--cta Sign up
+    //- this user is set in the authController through req.locals.user
+    if (user)
+      a.nav__el.nav__el--logout(href="#") Log out
+      a.nav__el(href="#") My Bookings
+      a.nav__el(href="#")
+        img.nav__user-img(src=`/img/users/${user.photo}` alt=`Photo of user ${user.name}`)
+        span= user.name.split(' ')[0]
+    else
+      a.nav__el(href="/login") Log in
+      button.nav__el.nav__el--cta Sign up

@@ -16,10 +16,16 @@ window.onload = function () {
           password: password,
         },
       });
-      console.log('response is', res);
+      if (res.data.status === 'success') {
+        // Redirect user to home page
+        window.setTimeout(() => {
+          location.assign('/');
+        }, 1000);
+      }
+      //console.log('response is', res);
     } catch (err) {
-      console.log('error logging in:', err.response.data);
-      //console.log(err.response.data.message);
+      //console.log('error logging in:', err.response.data);
+      alert('error logging in:', err.response.data.message);
     }
   };
 };

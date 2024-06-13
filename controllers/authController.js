@@ -91,8 +91,8 @@ exports.protect = catchAsync(async (req, res, next) => {
   ) {
     token = req.headers.authorization.split(' ')[1];
   } else if (req.cookies.jwt) {
-    // This is when the user sends the jwt through the cookies
-    // for instance when the authenticate through the login form
+    // This is when the user sends the jwt through cookies
+    // for instance, when the authenticate through the login form
     // and then navigating throughout the site
     token = req.cookies.jwt;
   }
@@ -131,6 +131,44 @@ exports.protect = catchAsync(async (req, res, next) => {
   // we set req.user so we can use that user in the next middleware function
   // remember that the req object travels from middleware to middleware
   req.user = freshUser;
+
+  next();
+});
+
+// this middleware is to determine if the user is logged in or not
+// And it's only for rendered pages, no need to pass error to global
+// error middleware
+exports.isLoggedIn = catchAsync(async (req, res, next) => {
+  // 1) Verify if token comes from cookies
+  if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+
+    const decoded = await promisify(jwt.verify)(
+      req.cookies.jwt,
+      process.env.JWT_SECRET
+    );
+
+    // 2) Check if user still exists
+    const currentUser = await User.findById(decoded.id);
+
+    if (!currentUser) {
+      return next();
+    }
+
+    // 3) Check if user changed password after the token was issued
+    // iat stands for issued at
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+      return next();
+    }
+
+    // THERE IS A LOGGED IN USER
+    // res.locals is available through all our pug templates
+    res.locals.user = currentUser;
+
+    return next();
+  }
+  // If there is a not logged in user, move on
+  res.locals.user = undefined;
 
   next();
 });
