@@ -13,7 +13,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xssClean = require('xss-clean');
 const hpp = require('hpp');
 const app = express();
-
+const cookieParser = require('cookie-parser');
 // Express support pug templates out of the box, no need to install additional packages
 // nevertheless install the pug package
 app.set('view engine', 'pug');
@@ -62,6 +62,9 @@ app.use('/api', limiter);
 // body greater than 10KB won't be accepted
 app.use(express.json({ limit: '10kb' }));
 
+//Using cookie-parser to parse data from the cookies with set in the client
+// once they authenticate, see more at: signAndSendToken
+app.use(cookieParser());
 // Data sanizitation, cleans all incoming data from malicious code
 // perfect place to do it here since sanitization must happen
 // after data is parsed
@@ -99,6 +102,10 @@ app.use(
 // because the end the request/response cycle
 // This is just for education purposes
 // app.use((req, res, next) => {
+//   console.log(
+//     'cookies are after we added the cookieParser middleware: ',
+//     req.cookies
+//   );
 //   // Mandatory to always call next, otherwise the app would be stuck
 //   next();
 // });
