@@ -62,6 +62,10 @@ app.use('/api', limiter);
 // body greater than 10KB won't be accepted
 app.use(express.json({ limit: '10kb' }));
 
+// This middleware will parse the URL encoded data in the request body
+// e.g when user is in /me and submit changes like name and password
+app.use(express.urlencoded({ extend: true, limit: '10kb' }));
+
 //Using cookie-parser to parse data from the cookies with set in the client
 // once they authenticate, see more at: signAndSendToken
 app.use(cookieParser());

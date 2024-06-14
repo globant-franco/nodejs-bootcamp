@@ -3,7 +3,7 @@ import { login, logout } from './login';
 import { displayMap } from './mapbox';
 
 window.onload = function () {
-  const loginForm = document.querySelector('.form');
+  const loginForm = document.querySelector('.form--login');
   if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
