@@ -20,7 +20,22 @@ window.onload = function () {
       e.preventDefault();
       const email = document.getElementById('email').value;
       const name = document.getElementById('name').value;
-      updateUserSettings(email, name);
+      updateUserSettings({ email, name }, 'data');
+    });
+  }
+
+  const updatePasswordForm = document.querySelector('.form-user-settings');
+  if (updatePasswordForm) {
+    updatePasswordForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const passwordCurrent = document.getElementById('password-current').value;
+      const password = document.getElementById('password').value;
+      const passwordConfirm = document.getElementById('password-confirm').value;
+
+      updateUserSettings(
+        { passwordCurrent, password, passwordConfirm },
+        'password'
+      );
     });
   }
 
