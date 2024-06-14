@@ -80,6 +80,18 @@ exports.login = catchAsync(async (req, res, next) => {
   // 3) If everything ok, send token to client
   signAndSendToken(user, res, 200);
 });
+
+// This route is only for rendered pages where user logs out from the server through a link
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({
+    status: 'success',
+  });
+};
+
 // Express set all header names to lowercase
 // for Authorization: Bearer my_token, translates to authorization: Bearer my_token
 exports.protect = catchAsync(async (req, res, next) => {
@@ -138,40 +150,48 @@ exports.protect = catchAsync(async (req, res, next) => {
 // this middleware is to determine if the user is logged in or not
 // And it's only for rendered pages, no need to pass error to global
 // error middleware
-exports.isLoggedIn = catchAsync(async (req, res, next) => {
-  // 1) Verify if token comes from cookies
-  if (req.cookies.jwt) {
-    token = req.cookies.jwt;
+exports.isLoggedIn = async (req, res, next) => {
+  // We are manually catching errors here because when user logs out
+  // we set a dummy string to the json web token and this function is run
+  // everytime we land on a page, meaning the token is verified by jwt.verify
+  // triggering a jwt malformed error so we basically want to move forward if this error happens
+  try {
+    // 1) Verify if token comes from cookies
+    if (req.cookies.jwt) {
+      token = req.cookies.jwt;
 
-    const decoded = await promisify(jwt.verify)(
-      req.cookies.jwt,
-      process.env.JWT_SECRET
-    );
+      const decoded = await promisify(jwt.verify)(
+        req.cookies.jwt,
+        process.env.JWT_SECRET
+      );
 
-    // 2) Check if user still exists
-    const currentUser = await User.findById(decoded.id);
+      // 2) Check if user still exists
+      const currentUser = await User.findById(decoded.id);
 
-    if (!currentUser) {
+      if (!currentUser) {
+        return next();
+      }
+
+      // 3) Check if user changed password after the token was issued
+      // iat stands for issued at
+      if (currentUser.changedPasswordAfter(decoded.iat)) {
+        return next();
+      }
+
+      // THERE IS A LOGGED IN USER
+      // res.locals is available through all our pug templates
+      res.locals.user = currentUser;
+
       return next();
     }
-
-    // 3) Check if user changed password after the token was issued
-    // iat stands for issued at
-    if (currentUser.changedPasswordAfter(decoded.iat)) {
-      return next();
-    }
-
-    // THERE IS A LOGGED IN USER
-    // res.locals is available through all our pug templates
-    res.locals.user = currentUser;
-
+  } catch (err) {
     return next();
   }
+
   // If there is a not logged in user, move on
   res.locals.user = undefined;
-
   next();
-});
+};
 
 // Roles is an array of roles
 exports.restrictTo = (...roles) => {

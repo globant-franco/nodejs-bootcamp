@@ -6,6 +6,7 @@ const authController = require('../controllers/authController');
 // Routes that don't require authentication
 router.post('/signup', authController.signup); // same as creating a new user
 router.post('/login', authController.login);
+router.get('/logout', authController.logout);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 router.patch(

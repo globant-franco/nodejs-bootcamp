@@ -1,5 +1,5 @@
 import '@babel/polyfill';
-import { login } from './login';
+import { login, logout } from './login';
 import { displayMap } from './mapbox';
 
 window.onload = function () {
@@ -14,7 +14,6 @@ window.onload = function () {
   }
 
   const mapBox = document.getElementById('map');
-
   if (mapBox) {
     const locations = JSON.parse(mapBox.dataset.locations);
 
@@ -22,4 +21,7 @@ window.onload = function () {
       displayMap(locations);
     }
   }
+
+  const logoutBtn = document.querySelector('.nav__el--logout');
+  if (logoutBtn) logoutBtn.addEventListener('click', logout);
 };
