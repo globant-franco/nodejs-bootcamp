@@ -144,6 +144,9 @@ exports.protect = catchAsync(async (req, res, next) => {
   // remember that the req object travels from middleware to middleware
   req.user = freshUser;
 
+  // RENDERED WEBSITE
+  // res.locals is available through all our pug templates
+  res.locals.user = freshUser;
   next();
 });
 
