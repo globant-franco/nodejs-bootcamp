@@ -4,6 +4,82 @@ const AppError = require('../utils/appError');
 const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
 const factory = require('./handlerFactory');
+const multer = require('multer');
+const sharp = require('sharp');
+
+// Let's have the image stored as a buffer so we can do the resizing
+// setting this allows us to have access to the image at req.file.buffer
+const multerStorage = multer.memoryStorage();
+
+// Here we check if the file is really an image, this callback is the same as the one
+// we specify in the `destination` and `filename` options for the multerStorage
+const multerFilter = (req, file, callbackFn) => {
+  if (file.mimetype.startsWith('image')) {
+    callbackFn(null, true);
+  } else {
+    callbackFn(
+      new AppError('Not an image! Please upload only images.', 400),
+      false
+    );
+  }
+};
+
+//const upload = multer({ dest: 'public/img/users' });
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
+
+// upload.fields is when we have multiple files for multiple fields
+// it will make file available through `req.files`
+exports.uploadTourImages = upload.fields([
+  { name: 'imageCover', maxCount: 1 },
+  { name: 'images', maxCount: 3 },
+]);
+
+exports.resizeTourImages = catchAsync(async (req, res, next) => {
+  if (!req.files.images || !req.files.imageCover) {
+    return next();
+  }
+
+  // Process tour image Cover
+  if (req.files.imageCover) {
+    req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
+    await sharp(req.files.imageCover[0].buffer)
+      .resize(2000, 1333)
+      .toFormat('jpeg')
+      .jpeg({ quality: 90 })
+      .toFile(`public/img/tours/${req.body.imageCover}`);
+  }
+
+  // Process tour images
+  if (req.files.images) {
+    req.body.images = [];
+    // Super important to understand why to use Promise.all here.
+    // And the reason is because inside loops async functions are delegated to the event loop
+    // the rest of the code is executed, meaning that req.body.images
+    // will be empty when moving to the next middleware to update the tour
+    // when using Promise.all we wait until all promises are fullfield
+    // and then making sure req.body.images is set
+    await Promise.all(
+      req.files.images.map(async (image, index) => {
+        const filename = `tour-${req.params.id}-${Date.now()}-${
+          index + 1
+        }.jpeg`;
+
+        await sharp(image.buffer)
+          .resize(2000, 1333)
+          .toFormat('jpeg')
+          .jpeg({ quality: 90 })
+          .toFile(`public/img/tours/${filename}`);
+
+        req.body.images.push(filename);
+      })
+    );
+  }
+
+  next();
+});
+
+// In case we only had one field for multiple images
+//upload.array('images', 5)
 
 // This middleware is called before getTours
 exports.aliasTopTours = (req, res, next) => {

@@ -65,7 +65,7 @@ const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
 // it also will set the image file in the request object as req.file not req.body.file
 exports.updateUserPhoto = upload.single('photo');
 
-exports.resizeUserPhoto = (req, res, next) => {
+exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
   if (!req.file) return next();
 
   // Since image is in memory there's not a filename yet, let's override
@@ -75,14 +75,14 @@ exports.resizeUserPhoto = (req, res, next) => {
   // each image to jpeg
   req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
 
-  sharp(req.file.buffer)
+  await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
     .toFile(`public/img/users/${req.file.filename}`);
 
   next();
-};
+});
 
 // Middleware function to implement /me and reusing factory.getOne
 // to basically hardcode the userId to current logged in user
