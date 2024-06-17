@@ -23,7 +23,13 @@ router.patch(
 
 // Remember that since the protect middleware is called, then user
 // is set in the req.user object
-router.patch('/updateMe', authController.protect, usersController.updateMe);
+
+router.patch(
+  '/updateMe',
+  authController.protect,
+  usersController.updateUserPhoto,
+  usersController.updateMe
+);
 router.delete('/deleteMe', authController.protect, usersController.deleteMe);
 router.get(
   '/me',

@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
     validate: [validator.isEmail, 'Please provide a valid email'],
     required: [true, 'A user must have an email'],
   },
-  photo: String, // path to the file system
+  photo: { type: String, default: 'default.jpg' }, // path to the file system
   role: {
     type: String,
     enum: ['user', 'guide', 'lead-guide', 'admin'],

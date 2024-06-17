@@ -1,3 +1,4 @@
+const multer = require('multer'); // middleware for handling multipart/form-data
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
@@ -13,6 +14,38 @@ const filterObject = (obj, ...allowedFields) => {
   return filteredObj;
 };
 
+// folder where we're gonna save uploaded images
+// if we don't set folder it will save images in memory
+const multerStorage = multer.diskStorage({
+  destination: (req, file, callbackFn) => {
+    // First argument is the error, if not set it to null
+    // Second argument is the destination
+    callbackFn(null, 'public/img/users');
+  },
+  // set how we're gonna name our file once uploaded
+  filename: (req, file, callbackFn) => {
+    //user-UserId-timestamp.jpeg
+    const extension = file.mimetype.split('/')[1];
+    callbackFn(null, `user-${req.user.id}-${Date.now()}.${extension}`);
+  },
+});
+
+// Here we check if the file is really an image, this callback is the same as the one
+// we specify in the `destination` and `filename` options for the multerStorage
+const multerFilter = (req, file, callbackFn) => {
+  if (file.mimetype.startsWith('image')) {
+    callbackFn(null, true);
+  } else {
+    callbackFn(
+      new AppError('Not an image! Please upload only images.', 400),
+      false
+    );
+  }
+};
+
+//const upload = multer({ dest: 'public/img/users' });
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
+
 // CRUD actions only for admins
 exports.getUsers = factory.getAll(User);
 exports.getUser = factory.getOne(User);
@@ -20,6 +53,10 @@ exports.createUser = factory.createOne(User);
 exports.deleteUser = factory.deleteOne(User);
 // Do NOT update password in this action
 exports.updateUser = factory.updateOne(User);
+
+// single -> 'photo' is the name of the form field that holds the image upload
+// it also will set the image file in the request object as req.file not req.body.file
+exports.updateUserPhoto = upload.single('photo');
 
 // Actions that can only be performed by current logged in users
 
@@ -41,9 +78,12 @@ exports.updateMe = catchAsync(async (req, res, next) => {
       )
     );
   }
+
   // 2) Get user from collection
   // Use findByIdAndUpdate in order to bypass the password validations that run on .create and .save
   const allowedParams = filterObject(req.body, 'name', 'email');
+  if (req.file) allowedParams.photo = req.file.filename;
+
   const updatedUser = await User.findByIdAndUpdate(req.user.id, allowedParams, {
     new: true,
     runValidators: true,
