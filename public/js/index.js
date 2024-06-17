@@ -26,16 +26,24 @@ window.onload = function () {
 
   const updatePasswordForm = document.querySelector('.form-user-settings');
   if (updatePasswordForm) {
-    updatePasswordForm.addEventListener('submit', (e) => {
+    updatePasswordForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const passwordCurrent = document.getElementById('password-current').value;
       const password = document.getElementById('password').value;
       const passwordConfirm = document.getElementById('password-confirm').value;
 
-      updateUserSettings(
+      let saveButton = document.querySelector('.btn--save-password');
+      saveButton.textContent = 'Updating...';
+
+      await updateUserSettings(
         { passwordCurrent, password, passwordConfirm },
         'password'
       );
+
+      document.getElementById('password-current').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('password-confirm').value = '';
+      saveButton.textContent = 'Save Password';
     });
   }
 
