@@ -2,6 +2,7 @@ import '@babel/polyfill';
 import { login, logout } from './login';
 import { displayMap } from './mapbox';
 import { updateUserSettings } from './updateSettings';
+import { bookTour } from './stripeUtils';
 
 window.onload = function () {
   const loginForm = document.querySelector('.form--login');
@@ -60,4 +61,14 @@ window.onload = function () {
 
   const logoutBtn = document.querySelector('.nav__el--logout');
   if (logoutBtn) logoutBtn.addEventListener('click', logout);
+
+  const bookBtn = document.getElementById('book-tour');
+  if (bookBtn) {
+    bookBtn.addEventListener('click', (e) => {
+      e.target.textContent = 'Processing...';
+      const tourId = e.target.dataset.tourId; // if we specify data-tour-id then it's available as dataset.tourId
+      // or you can also use const const { tourId } = e.target.dataset
+      bookTour(tourId);
+    });
+  }
 };
