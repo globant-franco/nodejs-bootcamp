@@ -1,7 +1,7 @@
 const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
-//const factory = require('./handlerFactory');
+const factory = require('./handlerFactory');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Booking = require('./../models/bookingModel');
 
@@ -59,3 +59,10 @@ exports.createBookingCheckout = catchAsync(async (req, res, next) => {
   // so we need to remove the query string and redirect to /
   res.redirect(req.originalUrl.split('?')[0]);
 });
+
+// CRUD Operations
+exports.getBookings = factory.getAll(Booking);
+exports.createBooking = factory.createOne(Booking);
+exports.getBooking = factory.getOne(Booking);
+exports.deleteBooking = factory.deleteOne(Booking);
+exports.updateBooking = factory.updateOne(Booking);
