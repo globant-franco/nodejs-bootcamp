@@ -34,7 +34,6 @@ const userSchema = new mongoose.Schema({
     validate: {
       // This only works on CREATE! AND .save()
       validator: function (value) {
-        console.log('Im validating password confirmation');
         return this.password === value;
       },
       message: 'Password confirmation does not match password',
