@@ -15,6 +15,7 @@ const xssClean = require('xss-clean');
 const hpp = require('hpp');
 const app = express();
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 // Express support pug templates out of the box, no need to install additional packages
 // nevertheless install the pug package
 app.set('view engine', 'pug');
@@ -35,6 +36,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // X-XSS-Protection Legacy header that tries to mitigate XSS attacks, but makes things worse, so Helmet disables it
 // More info about header: https://github.com/helmetjs/helmet?tab=readme-ov-file#helmet
 app.use(helmet());
+
+// middleware to compress server responses like texts/json
+app.use(compression());
 
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev')); // Logs reqs to console
