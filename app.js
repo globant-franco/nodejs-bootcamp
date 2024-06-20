@@ -15,10 +15,10 @@ const xssClean = require('xss-clean');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
-
+const cors = require('cors'); // to allow other domains accessing our api
 const app = express();
 // This is to trust proxies for secure connections, if so,
-// the x-forwarded-proto header is set to https meaning our connection
+// the x-forwarded-proto header is set to 'https' meaning our connection
 // is secure
 app.enable('trust proxy');
 // Express support pug templates out of the box, no need to install additional packages
@@ -41,6 +41,35 @@ app.use(express.static(path.join(__dirname, 'public')));
 // X-XSS-Protection Legacy header that tries to mitigate XSS attacks, but makes things worse, so Helmet disables it
 // More info about header: https://github.com/helmetjs/helmet?tab=readme-ov-file#helmet
 app.use(helmet());
+
+// Implement CORS
+// This middleware adds some specific headers to our responses like
+// Access-Control-Allow-Origin *
+// `*` -> Everyone can access our API
+app.use(cors());
+// Other uses:
+// Let's say our api is at api.natours.com and our frontend at www.natours.com, to make only our frontend allow to access our API
+// we do:
+// app.use(
+//   cors({
+//     origin: 'https://www.natours.com',
+//   })
+// );
+
+// Simple requests: GET AND POST
+// Non-simple requests: PUT, PATCH, DELETE, requests that send cookies
+// or use non-standard headers, these type of requests require a so-called
+// preflight request
+// Before making a non-simple request the browser does an OPTIONS request
+// in order to check if the request is safe to send
+// so we have to first respond to that OPTIONS request and send back the
+// Access-Control-Allow-Origin header and then the browser can know
+// if it can continue with the non-simple request
+// `app.options` refers to the HTTP method
+app.options('*', cors()); // On all OPTIONS requests from any client, send back the Access-Control-Allow-Origin header
+
+// If we'd wanted to send headers only for a specific route we'd do:
+//app.options('/api/v1/tours/:id', cors())
 
 // middleware to compress server responses like texts/json
 app.use(compression());
