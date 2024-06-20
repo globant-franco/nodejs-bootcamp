@@ -13,9 +13,14 @@ const helmet = require('helmet'); // helps setting secure http headers
 const mongoSanitize = require('express-mongo-sanitize');
 const xssClean = require('xss-clean');
 const hpp = require('hpp');
-const app = express();
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
+
+const app = express();
+// This is to trust proxies for secure connections, if so,
+// the x-forwarded-proto header is set to https meaning our connection
+// is secure
+app.enable('trust proxy');
 // Express support pug templates out of the box, no need to install additional packages
 // nevertheless install the pug package
 app.set('view engine', 'pug');

@@ -16,19 +16,26 @@ const signToken = (id) => {
 // in each request
 // So we want to store the token in cookie so clients can send it back to the server
 // automatically
-const signAndSendToken = (user, res, statusCode) => {
+const signAndSendToken = (user, req, res, statusCode) => {
   const token = signToken(user.id);
+  // There are two ways of checking if we're on a secure connection in express,
+  // one is by checking req.secure the other by checking the x-forwarded-proto header value
+  // Bear in mind that there are services like heroku that act as a proxy
+  // which kind of redirect and modify incoming requests, so we need to
+  // update our app to trust proxies
+  // check app.enable('trust proxy') in app.js
+  const secure = req.secure || req.headers['x-forwarded-proto'] === 'https';
   const cookieOptions = {
     // 90 days * 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
-    httpOnly: true, // cookie cannot be accessed or modified in any way by the browser, that's to prevent XSS attacks
+    // cookie cannot be accessed or modified in any way by the browser, that's to prevent XSS attacks
     // that also makes the browser to send the cookie automatically in every request
+    httpOnly: true,
+    // send it only through https, this is only for production or secure connections
+    secure,
   };
-
-  // send it only through https, this is only for production
-  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
   res.cookie('jwt', token, cookieOptions);
 
@@ -55,7 +62,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   // Don't send encrypted pwd to the user
   newUser.password = undefined;
 
-  signAndSendToken(newUser, res, 201);
+  signAndSendToken(newUser, req, res, 201);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -81,7 +88,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // 3) If everything ok, send token to client
-  signAndSendToken(user, res, 200);
+  signAndSendToken(user, req, res, 200);
 });
 
 // This route is only for rendered pages where user logs out from the server through a link
@@ -286,7 +293,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // 3) Update user.changedPasswordAt to `Date.now()`, this is done
   // in th model as a pre save hook
   // 4) Log the user in, send JWT
-  signAndSendToken(user, res, 200);
+  signAndSendToken(user, req, res, 200);
 });
 
 // This route is used when user manually updates password through the website
@@ -305,5 +312,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save(); // DOnt user findByIdAndUpdate when updating pwds because pwd validations won't run, they only run on .save and when creating a new document
 
   // 4) Log user in, send JWT
-  signAndSendToken(user, res, 200);
+  signAndSendToken(user, req, res, 200);
 });
