@@ -46,3 +46,13 @@ process.on('unhandledRejection', (err) => {
     process.exit(1); // 0 stands for success, 1 stands for failure
   });
 });
+
+// SIGTERM is a request to the program to terminate.
+// Listen to this event in case our cloud provider sends us a SIGTERM
+process.on('SIGTERM', (err) => {
+  console.log('SIGTERM RECEIVED! Shutting down gracefully');
+  server.close(() => {
+    console.log('Process terminated');
+    process.exit(0); // 0 stands for success, 1 stands for failure
+  });
+});
