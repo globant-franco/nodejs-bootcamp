@@ -16,6 +16,9 @@ const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
 const cors = require('cors'); // to allow other domains accessing our api
+
+const bookingsController = require('./controllers/bookingsController');
+
 const app = express();
 // This is to trust proxies for secure connections, if so,
 // the x-forwarded-proto header is set to 'https' meaning our connection
@@ -93,6 +96,11 @@ const limiter = rateLimit({
 // X-RateLimit-Remaining -> which should be the remaining for that IP
 // X-RateLimit-Reset -> The future date in milliseconds when the rate limit will reset
 app.use('/api', limiter);
+
+// Stripe webhook after checkout is successful
+// we need the boby in the request to be in raw format, not in json format
+// that's why we put it here before calling the next line `express.json`
+app.post('/webhook-checkout', express.raw, bookingsController.webhookCheckout);
 
 // This middleware will parse the JSON data in the request body
 // and make it accessible in your route handlers as req.body.
