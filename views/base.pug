@@ -11,7 +11,8 @@ html
 
       link(href="https://fonts.googleapis.com/css?family=Lato:300,300i,700"
         rel="stylesheet")
-  body
+  //- this alert property is coming from response.locals
+  body(data-alert=`${alert ? alert : ''}`)
     include _header
 
     // CONTENT

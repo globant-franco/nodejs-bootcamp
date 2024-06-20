@@ -4,6 +4,9 @@ const viewsController = require('./../controllers/viewsController');
 const authController = require('./../controllers/authController');
 const bookingsController = require('./../controllers/bookingsController');
 
+// Middleware that will set alert messages to response.alerts to all our web pages
+router.use(viewsController.alerts);
+
 // Set or not set user based on jwt cookie for all these routes
 // router.use(authController.isLoggedIn);
 

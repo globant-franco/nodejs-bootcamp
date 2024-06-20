@@ -19,7 +19,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   const base_url = `${req.protocol}://${req.get('host')}`;
   const success_url =
     process.env.NODE_ENV === 'production'
-      ? `${base_url}/my-tours`
+      ? `${base_url}/my-tours?alert=booking`
       : `${base_url}/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}`; // this a protected route so user is available through req.user,
 
   const session = await stripe.checkout.sessions.create({
